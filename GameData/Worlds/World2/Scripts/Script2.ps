@@ -1,0 +1,24 @@
+
+var TFlag 0
+rtflag 1 TFlag
+
+var TFlag2 0
+rtflag 3 TFlag2
+
+if TFlag2 == 0
+    if TFlag == 0
+        clrwdli
+        ownobj 1
+        say You Got the Crude Knife.|/
+        wtflag 1 1
+    end
+    else 
+        say Nothing Else..|/
+        wtflag 1 1
+    end
+end
+if TFlag2 == 1
+    setscene 4
+end 
+
+kill
