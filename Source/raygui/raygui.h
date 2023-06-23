@@ -2880,7 +2880,7 @@ int GuiListViewEx(Rectangle bounds, const char **text, int count, int *focus, in
 // Color Panel control
 Color GuiColorPanel(Rectangle bounds, const char *text, Color color)
 {
-    const Color colFadeColor = { 255, 255, 255, 255 };
+    const Color colWHITE = { 255, 255, 255, 255 };
     const Color colBlack = { 0, 0, 0, 255 };
 
     GuiState state = guiState;
@@ -2939,12 +2939,12 @@ Color GuiColorPanel(Rectangle bounds, const char *text, Color color)
     //--------------------------------------------------------------------
     if (state != STATE_DISABLED)
     {
-        DrawRectangleGradientEx(bounds, Fade(colFadeColor, guiAlpha), Fade(colFadeColor, guiAlpha), Fade(maxHueCol, guiAlpha), Fade(maxHueCol, guiAlpha));
+        DrawRectangleGradientEx(bounds, Fade(colWHITE, guiAlpha), Fade(colWHITE, guiAlpha), Fade(maxHueCol, guiAlpha), Fade(maxHueCol, guiAlpha));
         DrawRectangleGradientEx(bounds, Fade(colBlack, 0), Fade(colBlack, guiAlpha), Fade(colBlack, guiAlpha), Fade(colBlack, 0));
 
         // Draw color picker: selector
         Rectangle selector = { pickerSelector.x - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, pickerSelector.y - GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE)/2, (float)GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE), (float)GuiGetStyle(COLORPICKER, COLOR_SELECTOR_SIZE) };
-        GuiDrawRectangle(selector, 0, BLANK, Fade(colFadeColor, guiAlpha));
+        GuiDrawRectangle(selector, 0, BLANK, Fade(colWHITE, guiAlpha));
     }
     else
     {
@@ -3025,9 +3025,9 @@ float GuiColorBarAlpha(Rectangle bounds, const char *text, float alpha)
 // Color Bar Hue control
 // Returns hue value normalized [0..1]
 // NOTE: Other similar bars (for reference):
-//      Color GuiColorBarSat() [FadeColor->color]
+//      Color GuiColorBarSat() [WHITE->color]
 //      Color GuiColorBarValue() [BLACK->color], HSV/HSL
-//      float GuiColorBarLuminance() [BLACK->FadeColor]
+//      float GuiColorBarLuminance() [BLACK->WHITE]
 float GuiColorBarHue(Rectangle bounds, const char *text, float hue)
 {
     GuiState state = guiState;
@@ -3474,14 +3474,14 @@ void GuiLoadStyle(const char *fileName)
             {
                 Font font = { 0 };
                 int fontType = 0;   // 0-Normal, 1-SDF
-                Rectangle FadeColorRec = { 0 };
+                Rectangle WHITERec = { 0 };
 
                 fread(&font.baseSize, sizeof(int), 1, rgsFile);
                 fread(&font.glyphCount, sizeof(int), 1, rgsFile);
                 fread(&fontType, sizeof(int), 1, rgsFile);
 
-                // Load font FadeColor rectangle
-                fread(&FadeColorRec, sizeof(Rectangle), 1, rgsFile);
+                // Load font WHITE rectangle
+                fread(&WHITERec, sizeof(Rectangle), 1, rgsFile);
 
                 // Load font image parameters
                 int fontImageUncompSize = 0;
@@ -3537,9 +3537,9 @@ void GuiLoadStyle(const char *fileName)
 
                 GuiSetFont(font);
 
-                // Set font texture source rectangle to be used as FadeColor texture to draw shapes
+                // Set font texture source rectangle to be used as WHITE texture to draw shapes
                 // NOTE: This way, all gui can be draw using a single draw call
-                if ((FadeColorRec.width != 0) && (FadeColorRec.height != 0)) SetShapesTexture(font.texture, FadeColorRec);
+                if ((WHITERec.width != 0) && (WHITERec.height != 0)) SetShapesTexture(font.texture, WHITERec);
             }
 #endif
         }
@@ -3633,8 +3633,8 @@ void GuiLoadStyleDefault(void)
         guiFont = GetFontDefault();
 
         // Setup default raylib font rectangle
-        Rectangle FadeColorChar = { 41, 46, 2, 8 };
-        SetShapesTexture(guiFont.texture, FadeColorChar);
+        Rectangle WHITEChar = { 41, 46, 2, 8 };
+        SetShapesTexture(guiFont.texture, WHITEChar);
     }
 }
 

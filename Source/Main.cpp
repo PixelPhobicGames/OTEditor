@@ -2,6 +2,7 @@
 #include "raylib.h"
 
 int main(int argc, char **argv){
+    SetWindowState(FLAG_VSYNC_HINT);
     InitWindow(1280 , 720 , "OTE");
     SetTargetFPS(60);
     GuiLoadStyleDark();
@@ -12,17 +13,36 @@ int main(int argc, char **argv){
     }
 
     Init();
-
-    RenderTexture2D Target = LoadRenderTexture(320 , 200);
+    CacheWDL();
 
     DisableCursor();
 
-    while (!WindowShouldClose())
+    int LastClickTime = 0;
+    bool DoubleClick = false;
 
+    while (!WindowShouldClose())
     {
+        if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON))
+        {
+            if (LastClickTime != 0){
+                DoubleClick = true;
+            }
+            else {
+                LastClickTime = 1;
+            }
+
+        }
+
+        if (LastClickTime != 0){
+            LastClickTime ++;
+            if (LastClickTime == 30){
+                LastClickTime = 0;
+                DoubleClick = false;
+            }
+        }
 
         for (int i = 0 ; i <= 7 ; i ++){
-            if(!OverlayEnabled || IsMouseButtonDown(0) )UpdateCamera(&OTEditor.MainCamera, CAMERA_FIRST_PERSON);
+            if(!OverlayEnabled && !IsMouseButtonDown(0 )&& !IsMouseButtonDown(1))UpdateCamera(&OTEditor.MainCamera, CAMERA_FIRST_PERSON);
         }
         
         BeginTextureMode(Target);
@@ -30,13 +50,22 @@ int main(int argc, char **argv){
 
         BeginMode3D(OTEditor.MainCamera);
 
-            DrawGrid(1000, 1.0f);
+            DrawGrid(1000, 10.0f);
 
+            CWDLProcess();
             WDLProcess();
+
+            if (IsKeyPressed(KEY_LEFT_SHIFT)){
+                OmegaTechEditor.DrawModel = true;
+                OmegaTechEditor.X = OTEditor.MainCamera.position.x;
+                OmegaTechEditor.Y = OTEditor.MainCamera.position.y;
+                OmegaTechEditor.Z = OTEditor.MainCamera.position.z;
+                OmegaTechEditor.R = 1;
+            }
 
             if (OmegaTechEditor.DrawModel)
             {
-                switch (OmegaTechEditor.ModelID)
+                switch (EMID)
                 {
                 case 1:
                     DrawModelEx(WDLModels.Model1, {OmegaTechEditor.X, OmegaTechEditor.Y, OmegaTechEditor.Z}, {0, OmegaTechEditor.R, 0}, OmegaTechEditor.R, {OmegaTechEditor.S, OmegaTechEditor.S, OmegaTechEditor.S}, WHITE);
@@ -108,7 +137,7 @@ int main(int argc, char **argv){
                     break;
                 }
 
-                if (OmegaTechEditor.ModelID <= 100 || OmegaTechEditor.ModelID == -3){
+                if (EMID <= 100 || EMID == -3){
                     DrawCubeWires({OmegaTechEditor.X, OmegaTechEditor.Y, OmegaTechEditor.Z}, OmegaTechEditor.S, OmegaTechEditor.S, OmegaTechEditor.S, PINK);
                     DrawLine3D({OmegaTechEditor.X, OmegaTechEditor.Y, OmegaTechEditor.Z}, {OmegaTechEditor.X + OmegaTechEditor.S * 3 , OmegaTechEditor.Y, OmegaTechEditor.Z}, RED); 
                     DrawLine3D({OmegaTechEditor.X, OmegaTechEditor.Y, OmegaTechEditor.Z}, {OmegaTechEditor.X, OmegaTechEditor.Y + OmegaTechEditor.S * 3 , OmegaTechEditor.Z}, BLUE); 
@@ -194,29 +223,29 @@ int main(int argc, char **argv){
                     OmegaTechEditor.S -= .5f;
                 }
 
-                if (IsKeyPressed(KEY_ENTER))
+                if (IsKeyPressed(KEY_ENTER) || DoubleClick)
                 {
                     wstring WDLCommand = L"";
 
                     wstring Id = L"";
 
-                    if (Toggle045Active){
+                    if (CollisionToggle){
                         WDLCommand += L":C:";
                     }
 
-                    if (OmegaTechEditor.ModelID > 0)
+                    if (EMID > 0)
                     {
-                        if (OmegaTechEditor.ModelID != 100)
+                        if (EMID != 100)
                         {
-                            if (OmegaTechEditor.ModelID < 100)
+                            if (EMID < 100)
                             {
                                 Id = L"Model";
-                                WDLCommand += Id + to_wstring(OmegaTechEditor.ModelID) + L":";
+                                WDLCommand += Id + to_wstring(EMID) + L":";
                             }
                             else
                             {
                                 Id = L"Script";
-                                WDLCommand += Id + to_wstring(OmegaTechEditor.ModelID - 100) + L":";
+                                WDLCommand += Id + to_wstring(EMID - 100) + L":";
                             }
                         }
                         else
@@ -228,20 +257,16 @@ int main(int argc, char **argv){
                         WDLCommand += to_wstring(OmegaTechEditor.X) + L":" + to_wstring(OmegaTechEditor.Y) + L":" + to_wstring(OmegaTechEditor.Z) + L":" + to_wstring(OmegaTechEditor.S) + L":" + to_wstring(OmegaTechEditor.R) + L":";
                     }
                     else {
-                        if (OmegaTechEditor.ModelID == -1)
+                        if (EMID == -1)
                         {
                             WDLCommand += L"AdvCollision:";
                             WDLCommand += to_wstring(OmegaTechEditor.X) + L":" + to_wstring(OmegaTechEditor.Y) + L":" + to_wstring(OmegaTechEditor.Z) + L":" + to_wstring(OmegaTechEditor.S) + L":" + to_wstring(OmegaTechEditor.R) + L":" + to_wstring(OmegaTechEditor.W) + L":" + to_wstring(OmegaTechEditor.H) + L":" + to_wstring(OmegaTechEditor.L) + L":";
                         }
 
-                        if (OmegaTechEditor.ModelID == -2)
+                        if (EMID == -2)
                         {
                             WDLCommand += L"ClipBox:";
                             WDLCommand += to_wstring(OmegaTechEditor.X) + L":" + to_wstring(OmegaTechEditor.Y) + L":" + to_wstring(OmegaTechEditor.Z) + L":" + to_wstring(OmegaTechEditor.S) + L":" + to_wstring(OmegaTechEditor.R) + L":" + to_wstring(OmegaTechEditor.W) + L":" + to_wstring(OmegaTechEditor.H) + L":" + to_wstring(OmegaTechEditor.L) + L":";
-                        }
-
-                        if (OmegaTechEditor.ModelID == -3){
-                            WDLCommand += L"NE1:" + to_wstring(OmegaTechEditor.X) + L":" + to_wstring(OmegaTechEditor.Y) + L":" + to_wstring(OmegaTechEditor.Z) + L":" + to_wstring(OmegaTechEditor.S) + L":" + to_wstring(OmegaTechEditor.R) + L":";
                         }
                     }
 
@@ -250,8 +275,20 @@ int main(int argc, char **argv){
                     OTEditor.WorldData += WDLCommand;
 
                     OmegaTechEditor.DrawModel = false;
+                    CacheWDL();
                 }
-
+                if (IsMouseButtonDown(0))
+                {
+                    OmegaTechEditor.X += GetMouseDelta().x / 8;
+                    OmegaTechEditor.Y += GetMouseDelta().y / 8;
+                    OmegaTechEditor.Z -= (GetMouseWheelMove() * 2);
+                }
+                if (IsMouseButtonDown(1))
+                {
+                    OmegaTechEditor.W += GetMouseDelta().x / 8;
+                    OmegaTechEditor.H += GetMouseDelta().y / 8;
+                    OmegaTechEditor.L -= (GetMouseWheelMove() * 2);
+                }
             }
 
         EndMode3D();
@@ -261,12 +298,22 @@ int main(int argc, char **argv){
         BeginDrawing();  
         DrawTexturePro(Target.texture, (Rectangle){ 0, 0, Target.texture.width, -Target.texture.height }, (Rectangle){ 0, 0, float(GetScreenWidth()), float(GetScreenHeight())}, (Vector2){ 0, 0 } , 0.f , WHITE);
         DrawFPS(10, 10);
+        DrawText(TextFormat("%f , %f , %f" , OTEditor.MainCamera.position.x,OTEditor.MainCamera.position.y,OTEditor.MainCamera.position.z) , 10 , 40 , 15 , PURPLE);
+        DrawText("Open Editor (TAB) + Help (H)" , 10  , 60 , 15 , WHITE);
 
-        if (OverlayEnabled)DrawOverlay();
+        if (OverlayEnabled){
+            DrawOverlay();
+            if (!IsMouseButtonReleased(0) && GetCollision( 0, 0, 144, 720 , GetMouseX(), GetMouseY() , 5 , 5)){
+                RenderPreview();
+            }
+        }
 
         EndDrawing();
 
-        if (IsKeyPressed(KEY_F11))ToggleFullscreen();
+        if (IsKeyPressed(KEY_F11)){
+            ToggleFullscreen();
+        }
+
         if (IsKeyPressed(KEY_TAB)){
             if (OverlayEnabled){
                 OverlayEnabled = false;
